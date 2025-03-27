@@ -1,0 +1,22 @@
+﻿@model Product
+
+<h2>Xác nhận xóa sản phẩm</h2>
+
+<div>
+    <h4>@Model.Name</h4>
+    <p><strong>Giá:</strong> @Model.Price.ToString("N0") VND</p>
+    <p><strong>Mô tả:</strong> @Model.Description</p>
+
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+            <img src="@Model.ImageUrl" width="200" height="200" style="object-fit: cover; border-radius: 5px;" />
+    }
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn btn-danger">Xóa</button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    </form>
+</div>
+
+

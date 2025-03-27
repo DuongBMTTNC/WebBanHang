@@ -1,0 +1,30 @@
+﻿@model Product
+
+<h2>Chỉnh sửa sản phẩm</h2>
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="Id" />
+
+    <label>Tên sản phẩm</label>
+    <input asp-for="Name" class="form-control" required />
+
+    <label>Mô tả</label>
+    <textarea asp-for="Description" class="form-control"></textarea>
+
+    <label>Giá</label>
+    <input asp-for="Price" class="form-control" type="number" required />
+
+    <label>Ảnh hiện tại</label><br />
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+            <img src="@Model.ImageUrl" width="150" />
+
+        <br />
+    }
+
+    <label>Chọn ảnh mới (Nếu muốn đổi)</label>
+    <input type="file" name="imageFile" class="form-control" accept="image/*" />
+
+    <button type="submit">Cập nhật</button>
+</form>
+

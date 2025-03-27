@@ -1,0 +1,38 @@
+﻿@model IEnumerable<Product>
+
+<h2>Products</h2>
+<a asp-action="Create" class="btn btn-primary">Thêm Sản Phẩm</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Tên</th>
+            <th>Giá</th>
+            <th>Mo ta</th>
+            <th>Anh</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td>@item.Price</td>
+                            <td>@item.Description</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                                <img src="@item.ImageUrl" width="100" height="100" style="object-fit: cover; border-radius: 5px;" />
+                                    }
+                                    
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.Id">Xem</a> |
+                                <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
+                                <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
+                                <a asp-action="AddToCart" asp-controller="Cart" asp-route-productId="@item.Id" class="btn btn-success">Thêm vào giỏ</a>
+                            </td>
+                        </tr>
+        }
+    </tbody>
+</table>
