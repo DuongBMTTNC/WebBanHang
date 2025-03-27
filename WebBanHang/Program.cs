@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using WebBanHang;
 using WebBanHang.Data;
 using WebBanHang.Models;
+using WebBanHang.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +19,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
  .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddRazorPages();
+builder.Services.AddScoped<EmailService>();
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
