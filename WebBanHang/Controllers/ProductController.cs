@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +12,11 @@ namespace WebBanHang.Controllers
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public ProductController(ApplicationDbContext context)
+        private readonly UserManager<ApplicationUser> _userManager;
+        public ProductController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // Danh sách sản phẩm
@@ -25,17 +27,43 @@ namespace WebBanHang.Controllers
             return View(products);
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Index(string searchString, decimal? minPrice, decimal? maxPrice)
+        {
+            var products = _context.Products.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                products = products.Where(p => p.Name.Contains(searchString));
+            }
+
+            if (minPrice.HasValue)
+            {
+                products = products.Where(p => p.Price >= minPrice.Value);
+            }
+
+            if (maxPrice.HasValue)
+            {
+                products = products.Where(p => p.Price <= maxPrice.Value);
+            }
+
+            // Lưu lại giá trị tìm kiếm vào ViewData
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["MinPrice"] = minPrice;
+            ViewData["MaxPrice"] = maxPrice;
+
+            return View(products.ToList());
+        }
+
         // Chi tiết sản phẩm
         [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var product = await _context.Products
-                .FirstOrDefaultAsync(p => p.Id == id);
+        .Include(p => p.Comments)
+        .ThenInclude(c => c.User) // Lấy thông tin người bình luận
+        .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product == null)
             {
@@ -214,6 +242,134 @@ namespace WebBanHang.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [AllowAnonymous]
+        public IActionResult AddComment()
+        {
+            return View();
+        }
 
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> AddComment(int productId, string content)
+        {
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return BadRequest("Nội dung bình luận không được để trống.");
+            }
+
+            // Lấy User ID của tài khoản đang đăng nhập
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized("Bạn cần đăng nhập để bình luận.");
+            }
+
+            // Tạo bình luận mới
+            var comment = new Comment
+            {
+                UserId = user.Id, // Gán UserId là của tài khoản đang đăng nhập
+                ProductId = productId,
+                Content = content,
+                CreatedAt = DateTime.UtcNow // Tự động cập nhật ngày bình luận
+            };
+
+            // Lưu vào database
+            _context.Comments.Add(comment);
+            await _context.SaveChangesAsync();
+
+            return Ok("Bình luận đã được thêm.");
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> Wishlist()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var wishlistItems = await _context.Wishlists
+                .Where(w => w.UserId == user.Id)
+                .Include(w => w.Product)
+                .ToListAsync();
+
+            return View(wishlistItems);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> AddToWishlist(int productId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized("Bạn cần đăng nhập để thêm vào yêu thích.");
+            }
+
+            var existingWishlist = await _context.Wishlists
+                .FirstOrDefaultAsync(w => w.UserId == user.Id && w.ProductId == productId);
+
+            if (existingWishlist == null)
+            {
+                var wishlist = new Wishlist
+                {
+                    UserId = user.Id,
+                    ProductId = productId
+                };
+
+                _context.Wishlists.Add(wishlist);
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(new { message = "Sản phẩm đã được thêm vào danh sách yêu thích." });
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> RemoveFromWishlist(int productId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized("Bạn cần đăng nhập để xóa khỏi danh sách yêu thích.");
+            }
+
+            var wishlistItem = await _context.Wishlists
+                .FirstOrDefaultAsync(w => w.UserId == user.Id && w.ProductId == productId);
+
+            if (wishlistItem != null)
+            {
+                _context.Wishlists.Remove(wishlistItem);
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(new { message = "Sản phẩm đã được xóa khỏi danh sách yêu thích." });
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> AddRating(int productId, int stars)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (userId == null)
+            {
+                return Unauthorized(); // Yêu cầu đăng nhập trước khi đánh giá
+            }
+
+            var rating = new Rating
+            {
+                ProductId = productId,
+                Stars = stars,
+                UserId = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Ratings.Add(rating);
+            await _context.SaveChangesAsync();
+
+            // Trả về dữ liệu đánh giá mới dưới dạng JSON
+            return RedirectToAction("Details", "Product", new { id = productId });
+        }
     }
 }

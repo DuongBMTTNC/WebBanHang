@@ -19,3 +19,86 @@
     </div>
 </div>
 
+<form asp-action="AddToWishlist" asp-controller="Product" method="post">
+    <input type="hidden" name="productId" value="@Model.Id" />
+    <button type="submit">💖 Thêm vào yêu thích</button>
+</form>
+
+<h3>Thêm Bình Luận</h3>
+
+<form asp-action="AddComment" method="post">
+    <input type="hidden" name="ProductId" value="@Model.Id" />
+
+    <div class="form-group">
+        <label for="content">Nội dung bình luận:</label>
+        <textarea name="Content" class="form-control" required></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Gửi Bình Luận</button>
+</form>
+
+<h3>Bình luận</h3>
+        @foreach (var comment in Model.Comments)
+        {
+                <div class="comment-box">
+                    <p>@comment.Content</p>
+                    <small>Đăng bởi: @comment.User.UserName vào lúc @comment.CreatedAt</small>
+                </div>
+        }
+
+
+<h3>Đánh Giá ⭐</h3>
+
+@if (User.Identity.IsAuthenticated)
+{
+    <form asp-action="AddRating" asp-controller="Product" method="post">
+        <input type="hidden" name="productId" value="@Model.Id" />
+        <label>Chọn số sao:</label>
+        <select name="stars" class="form-control">
+            <option value="1">⭐</option>
+            <option value="2">⭐⭐</option>
+            <option value="3">⭐⭐⭐</option>
+            <option value="4">⭐⭐⭐⭐</option>
+            <option value="5">⭐⭐⭐⭐⭐</option>
+        </select>
+        <button type="submit" class="btn btn-primary mt-2">Gửi đánh giá</button>
+    </form>
+}
+else
+{
+    <p><a asp-action="Login" asp-controller="Account">Đăng nhập</a> để đánh giá sản phẩm.</p>
+}
+@if (Model.Ratings.Any())
+{
+            <ul>
+        @foreach (var rating in Model.Ratings)
+        {
+                            <li>@rating.User.UserName: @rating.Stars ⭐ - @rating.CreatedAt.ToString("yyyy-MM-dd HH:mm")</li>
+                                    <script>
+            function submitRating() {
+                var stars = document.getElementById("rating-stars").value;
+                var productId = @Model.Id;
+
+                fetch('/Product/AddRating', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId: productId, stars: stars })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Cập nhật số sao trung bình
+                    document.getElementById("average-rating").innerText = `${data.averageRating} ⭐`;
+
+                    // Cập nhật danh sách đánh giá mới
+                    var ratingHtml = `<li>${data.user}: ${data.stars} ⭐ - ${data.createdAt}</li>`;
+                    document.querySelector("#ratings-list ul").innerHTML += ratingHtml;
+                });
+            }
+        </script>
+        }
+            </ul>
+}
+else
+{
+            <p>Chưa có đánh giá nào.</p>
+}

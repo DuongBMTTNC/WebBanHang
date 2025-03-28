@@ -1,6 +1,17 @@
 ﻿@model IEnumerable<Product>
 
 <h2>Products</h2>
+<form asp-controller="Product" asp-action="Index" method="get">
+    <input type="text" name="searchString" placeholder="Nhập từ khóa..." value="@ViewData["CurrentFilter"]" />
+
+    <input type="number" name="minPrice" placeholder="Giá thấp nhất" min="0" step="1000" 
+           value="@ViewData["MinPrice"]" />
+
+    <input type="number" name="maxPrice" placeholder="Giá cao nhất" min="0" step="1000" 
+           value="@ViewData["MaxPrice"]" />
+
+    <button type="submit">🔍 Tìm kiếm</button>
+</form>
 <a asp-action="Create" class="btn btn-primary">Thêm Sản Phẩm</a>
 
 <table class="table">

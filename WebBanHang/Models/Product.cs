@@ -18,5 +18,17 @@ namespace WebBanHang.Models
         public decimal Price { get; set; }
 
         public string? ImageUrl { get; set; }
+
+        public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
+        public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
+
+        public double AverageRating
+        {
+            get
+            {
+                return Ratings.Any() ? Ratings.Average(r => r.Stars) : 0;
+            }
+        }
     }
 }
