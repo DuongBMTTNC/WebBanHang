@@ -8,7 +8,7 @@ using WebBanHang.Models;
 
 namespace WebBanHang.Controllers
 {
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize]
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -20,7 +20,6 @@ namespace WebBanHang.Controllers
         }
 
         // Danh sách sản phẩm
-        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             var products = await _context.Products.ToListAsync();
@@ -28,7 +27,6 @@ namespace WebBanHang.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public IActionResult Index(string searchString, decimal? minPrice, decimal? maxPrice)
         {
             var products = _context.Products.AsQueryable();
@@ -57,7 +55,6 @@ namespace WebBanHang.Controllers
         }
 
         // Chi tiết sản phẩm
-        [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
             var product = await _context.Products

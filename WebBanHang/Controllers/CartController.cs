@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanHang.Data;
@@ -6,6 +7,7 @@ using WebBanHang.Models;
 using WebBanHang.Services;
    namespace WebBanHang.Controllers
 {
+    [Authorize]
     public class CartController : Controller
     {
         private readonly ApplicationDbContext _context;
