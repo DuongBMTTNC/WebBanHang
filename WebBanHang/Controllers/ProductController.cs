@@ -280,7 +280,6 @@ namespace WebBanHang.Controllers
             return Ok("Bình luận đã được thêm.");
         }
 
-        [AllowAnonymous]
         public async Task<IActionResult> Wishlist()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -297,7 +296,6 @@ namespace WebBanHang.Controllers
             return View(wishlistItems);
         }
 
-        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> AddToWishlist(int productId)
         {
@@ -325,7 +323,6 @@ namespace WebBanHang.Controllers
             return Ok(new { message = "Sản phẩm đã được thêm vào danh sách yêu thích." });
         }
 
-        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> RemoveFromWishlist(int productId)
         {
