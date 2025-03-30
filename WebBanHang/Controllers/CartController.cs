@@ -129,6 +129,55 @@ using WebBanHang.Services;
 
             return RedirectToAction("OrderSuccess");
         }
+        public async Task<IActionResult> IncreaseQuantity(int productId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            var cart = await _context.Carts
+                .Include(c => c.CartItems)
+                .FirstOrDefaultAsync(c => c.UserId == user.Id);
+
+            if (cart != null)
+            {
+                var cartItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == productId);
+                if (cartItem != null)
+                {
+                    cartItem.Quantity++;
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            return RedirectToAction("Index");
+        }
+        public async Task<IActionResult> DecreaseQuantity(int productId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            var cart = await _context.Carts
+                .Include(c => c.CartItems)
+                .FirstOrDefaultAsync(c => c.UserId == user.Id);
+
+            if (cart != null)
+            {
+                var cartItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == productId);
+                if (cartItem != null)
+                {
+                    if (cartItem.Quantity > 1)
+                    {
+                        cartItem.Quantity--;
+                    }
+                    else
+                    {
+                        cart.CartItems.Remove(cartItem);
+                    }
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            return RedirectToAction("Index");
+        }
 
     }
 }
