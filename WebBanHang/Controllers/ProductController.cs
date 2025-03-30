@@ -242,13 +242,12 @@ namespace WebBanHang.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [AllowAnonymous]
         public IActionResult AddComment()
         {
             return View();
         }
 
-        [AllowAnonymous]
+
         [HttpPost]
         public async Task<IActionResult> AddComment(int productId, string content)
         {
@@ -344,7 +343,6 @@ namespace WebBanHang.Controllers
             return Ok(new { message = "Sản phẩm đã được xóa khỏi danh sách yêu thích." });
         }
 
-        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> AddRating(int productId, int stars)
         {
