@@ -71,14 +71,15 @@ namespace WebBanHang.Controllers
         }
 
         // GET: Tạo sản phẩm
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Staff")]
         public IActionResult Create()
         {
   
             return View();
         }
         // POST: Tạo sản phẩm
-       
+
+        [Authorize(Roles = "Admin, Staff")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Product product, IFormFile imageFile)
@@ -118,7 +119,7 @@ namespace WebBanHang.Controllers
         }
 
         // GET: Chỉnh sửa sản phẩm
-
+        [Authorize(Roles = "Admin, Staff")]
         public IActionResult Edit(int id)
         {
             var product = _context.Products.Find(id);
@@ -126,6 +127,7 @@ namespace WebBanHang.Controllers
             return View(product);
         }
 
+        [Authorize(Roles = "Admin, Staff")]
         [HttpPost]
         public async Task<IActionResult> Edit(int id, Product product, IFormFile? imageFile)
         {
@@ -191,6 +193,7 @@ namespace WebBanHang.Controllers
 
 
         // GET: Xóa sản phẩm
+        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
