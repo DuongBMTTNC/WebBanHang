@@ -58,8 +58,10 @@ namespace WebBanHang.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             var product = await _context.Products
+        .Include(p => p.Ratings)
+            .ThenInclude(r => r.User)
         .Include(p => p.Comments)
-        .ThenInclude(c => c.User) // Lấy thông tin người bình luận
+            .ThenInclude(c => c.User)
         .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product == null)
@@ -347,10 +349,7 @@ namespace WebBanHang.Controllers
         public async Task<IActionResult> AddRating(int productId, int stars)
         {
             var userId = _userManager.GetUserId(User);
-            if (userId == null)
-            {
-                return Unauthorized(); // Yêu cầu đăng nhập trước khi đánh giá
-            }
+            if (userId == null) return Unauthorized();
 
             var rating = new Rating
             {
@@ -363,8 +362,20 @@ namespace WebBanHang.Controllers
             _context.Ratings.Add(rating);
             await _context.SaveChangesAsync();
 
-            // Trả về dữ liệu đánh giá mới dưới dạng JSON
-            return RedirectToAction("Details", "Product", new { id = productId });
+            // Cập nhật số sao trung bình
+            var product = await _context.Products
+                .Include(p => p.Ratings)
+                .FirstOrDefaultAsync(p => p.Id == productId);
+
+            var averageRating = product.Ratings.Any() ? product.Ratings.Average(r => r.Stars) : 0;
+
+            return Json(new
+            {
+                averageRating = averageRating.ToString("0.0"),
+                user = User.Identity.Name,
+                stars = stars,
+                createdAt = rating.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+            });
         }
     }
 }
