@@ -21,14 +21,8 @@ namespace WebBanHang.Models
 
         public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
-        public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
+        public List<Rating> Ratings { get; set; } = new();
 
-        public double AverageRating
-        {
-            get
-            {
-                return Ratings.Any() ? Ratings.Average(r => r.Stars) : 0;
-            }
-        }
+        public double AverageRating => Ratings.Any() ? Ratings.Average(r => r.Stars) : 0;
     }
 }

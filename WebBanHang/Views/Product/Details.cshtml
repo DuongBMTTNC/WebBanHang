@@ -46,39 +46,48 @@
         }
     </div>
 
-    <div class="mt-4">
-        <h3>⭐ Đánh Giá</h3>
-        @if (User.Identity.IsAuthenticated)
-        {
-                <form asp-action="AddRating" asp-controller="Product" method="post">
-                    <input type="hidden" name="productId" value="@Model.Id" />
-                    <select name="stars" class="form-select w-25">
-                        <option value="1">⭐</option>
-                        <option value="2">⭐⭐</option>
-                        <option value="3">⭐⭐⭐</option>
-                        <option value="4">⭐⭐⭐⭐</option>
-                        <option value="5">⭐⭐⭐⭐⭐</option>
-                    </select>
-                    <button type="submit" class="btn btn-primary mt-2">Gửi đánh giá</button>
-                </form>
-        }
-        else
-        {
-                <p><a asp-action="Login" asp-controller="Account">Đăng nhập</a> để đánh giá sản phẩm.</p>
-        }
+    <h3>Đánh Giá ⭐</h3>
 
-        @if (Model.Ratings.Any())
-        {
-                <ul class="list-group mt-3">
-                @foreach (var rating in Model.Ratings)
-                {
-                            <li class="list-group-item">@rating.User.UserName: @rating.Stars ⭐ - @rating.CreatedAt.ToString("yyyy-MM-dd HH:mm")</li>
-                }
-                </ul>
-        }
-        else
-        {
-                <p>Chưa có đánh giá nào.</p>
-        }
-    </div>
-</div>
+<p><strong>Đánh giá trung bình:</strong> @Model.AverageRating.ToString("0.0") ⭐</p>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <form asp-action="AddRating" asp-controller="Product" method="post">
+            <input type="hidden" name="productId" value="@Model.Id" />
+            <label>Chọn số sao:</label>
+            <select name="stars" class="form-control">
+                <option value="1">⭐</option>
+                <option value="2">⭐⭐</option>
+                <option value="3">⭐⭐⭐</option>
+                <option value="4">⭐⭐⭐⭐</option>
+                <option value="5">⭐⭐⭐⭐⭐</option>
+            </select>
+            <button type="submit" class="btn btn-primary mt-2">Gửi đánh giá</button>
+        </form>
+    }
+    else
+    {
+        <p><a asp-action="Login" asp-controller="Account">Đăng nhập</a> để đánh giá sản phẩm.</p>
+    }
+
+    @if (Model.Ratings.Any())
+    {
+        <h4>Danh sách đánh giá:</h4>
+        <ul>
+            @foreach (var rating in Model.Ratings)
+            {
+                    <li>
+                        <strong>@rating.User.UserName:</strong> 
+                    @for (int i = 0; i < rating.Stars; i++)
+                    {
+                                <span>⭐</span>
+                    }
+                        - @rating.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                    </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>Chưa có đánh giá nào.</p>
+    }
