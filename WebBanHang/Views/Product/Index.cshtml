@@ -1,38 +1,72 @@
 ﻿@model IEnumerable<Product>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
 
-<h2>Products</h2>
-<a asp-action="Create" class="btn btn-primary">Thêm Sản Phẩm</a>
+<div class="container mt-4">
+    <h2 class="text-center mb-4">📦 Danh sách sản phẩm</h2>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Tên</th>
-            <th>Giá</th>
-            <th>Mo ta</th>
-            <th>Anh</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+    <form asp-controller="Product" asp-action="Index" method="get" class="row g-2 justify-content-center">
+        <div class="col-md-3">
+            <input type="text" name="searchString" class="form-control" placeholder="🔍 Nhập từ khóa..."
+                   value="@ViewData["CurrentFilter"]" />
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="minPrice" class="form-control" placeholder="💰 Giá thấp nhất" min="0" step="1000"
+                   value="@ViewData["MinPrice"]" />
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="maxPrice" class="form-control" placeholder="💰 Giá cao nhất" min="0" step="1000"
+                   value="@ViewData["MaxPrice"]" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">🔍 Tìm kiếm</button>
+        </div>
+    </form>
+
+    @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+    {
+            <div class="text-end mt-3">
+                <a asp-action="Create" class="btn btn-success">➕ Thêm sản phẩm</a>
+            </div>
+    }
+
+    <div class="table-responsive mt-3">
+        <table class="table table-striped table-hover text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>Tên</th>
+                    <th>Giá</th>
+                    <th>Mô tả</th>
+                    <th>Ảnh</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
                         <tr>
-                            <td>@item.Name</td>
-                            <td>@item.Price</td>
+                            <td class="fw-bold">@item.Name</td>
+                            <td class="text-danger fw-bold">@item.Price.ToString("N0") VND</td>
                             <td>@item.Description</td>
-                                <td>
-                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
-                                    {
-                                                <img src="@item.ImageUrl" width="100" height="100" style="object-fit: cover; border-radius: 5px;" />
-                                    }
-                                    
                             <td>
-                                <a asp-action="Details" asp-route-id="@item.Id">Xem</a> |
-                                <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
-                                <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
-                                <a asp-action="AddToCart" asp-controller="Cart" asp-route-productId="@item.Id" class="btn btn-success">Thêm vào giỏ</a>
+                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                        <img src="@item.ImageUrl" width="80" height="80" class="rounded border" style="object-fit: cover;" />
+                            }
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">👀 Xem</a>
+                            @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                            {
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">✏️ Sửa</a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">🗑️ Xóa</a>
+                            }
+                                <a asp-action="AddToCart" asp-controller="Cart" asp-route-productId="@item.Id" class="btn btn-success btn-sm">🛒 Thêm vào giỏ</a>
                             </td>
                         </tr>
-        }
-    </tbody>
-</table>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

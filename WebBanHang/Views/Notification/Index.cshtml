@@ -1,0 +1,13 @@
+﻿@model List<Notification>
+
+<h2>Thông báo</h2>
+<ul>
+    @foreach (var notif in Model)
+    {
+            <li>
+                <strong>@notif.Message</strong> - <small>@notif.CreatedAt.ToLocalTime()</small>
+            </li>
+    }
+</ul>
+
+

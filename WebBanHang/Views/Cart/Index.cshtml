@@ -1,40 +1,60 @@
 ﻿@model Cart
 
-<h2>Giỏ hàng của bạn</h2>
+<div class="container mt-4">
+    <h2 class="text-center mb-4">🛒 Giỏ hàng của bạn</h2>
 
-@if (Model == null || Model.CartItems.Count == 0)
-{
-        <p>Giỏ hàng của bạn đang trống.</p>
-}
-else
-{
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Hình ảnh</th>
-                    <th>Sản phẩm</th>
-                    <th>Giá</th>
-                    <th>Số lượng</th>
-                    <th>Tổng</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var item in Model.CartItems)
-            {
-                        <tr>
-                            <td><img src="@item.Product.ImageUrl" width="50" height="50"></td>
-                            <td>@item.Product.Name</td>
-                            <td>@item.Price.ToString("N0") VND</td>
-                            <td>@item.Quantity</td>
-                            <td>@(item.Quantity * item.Price) VND</td>
-                            <td>
-                                <a asp-action="RemoveFromCart" asp-route-productId="@item.ProductId" class="btn btn-danger">Xóa</a>
-                            </td>
-                        </tr>
-            }
-            </tbody>
-        </table>
-}
+    @if (Model == null || Model.CartItems.Count == 0)
+    {
+            <div class="alert alert-warning text-center">
+                <strong>Giỏ hàng của bạn đang trống.</strong>
+            </div>
+    }
+    else
+    {
+            <table class="table table-bordered text-center align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Hình ảnh</th>
+                        <th>Sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th>Tổng</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model.CartItems)
+                {
+                            <tr>
+                                <td>
+                                    <img src="@item.Product.ImageUrl" class="rounded" width="60" height="60" alt="Ảnh sản phẩm">
+                                </td>
+                                <td class="fw-bold">@item.Product.Name</td>
+                                <td>@item.Price.ToString("N0") VND</td>
+                                <td>
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <a asp-action="DecreaseQuantity" asp-route-productId="@item.ProductId" class="btn btn-sm btn-secondary">-</a>
+                                        <span class="mx-2">@item.Quantity</span>
+                                        <a asp-action="IncreaseQuantity" asp-route-productId="@item.ProductId" class="btn btn-sm btn-primary">+</a>
+                                    </div>
+                                </td>
+                                <td class="text-danger fw-bold">@((item.Quantity * item.Price).ToString("N0")) VND</td>
+                                <td>
+                                    <a asp-action="RemoveFromCart" asp-route-productId="@item.ProductId" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash-alt"></i> Xóa
+                                    </a>
+                                </td>
+                            </tr>
+                }
+                </tbody>
+            </table>
 
+            <div class="text-end">
+                <h4 class="text-success">Tổng tiền: <span class="fw-bold">@Model.CartItems.Sum(i => i.Quantity * i.Price).ToString("N0") VND</span></h4>
+                <a asp-action="Checkout" class="btn btn-success btn-lg mt-2">
+                        <i class="fas fa-shopping-cart"></i>💰 Thanh toán ngay
+                </a>
+            </div>
+    }
+</div>
 
