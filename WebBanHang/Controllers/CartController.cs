@@ -98,6 +98,7 @@ using WebBanHang.Services;
         {
             return View();
         }
+        [HttpGet]
         public async Task<IActionResult> Checkout()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -108,23 +109,56 @@ using WebBanHang.Services;
                 .ThenInclude(ci => ci.Product)
                 .FirstOrDefaultAsync(c => c.UserId == user.Id);
 
-            if (cart == null || !cart.CartItems.Any()) return RedirectToAction("Index");
+            if (cart == null || !cart.CartItems.Any()) return RedirectToAction("Index", "Cart");
+
+            return View(); // Hiển thị form nhập địa chỉ + ghi chú
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Checkout(string address, string note)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            var cart = await _context.Carts
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Product)
+                .FirstOrDefaultAsync(c => c.UserId == user.Id);
+
+            if (cart == null || !cart.CartItems.Any()) return RedirectToAction("Index", "Cart");
 
             // Tạo đơn hàng mới
             var order = new Order
             {
                 UserId = user.Id,
+               
+                OrderDate = DateTime.UtcNow,
+                Status = "Chờ xác nhận",
                 OrderItems = cart.CartItems.Select(ci => new OrderItem
                 {
                     ProductId = ci.ProductId,
                     Quantity = ci.Quantity,
                     Price = ci.Price
-                }).ToList(),
-                Status = "Chờ xác nhận"
+                }).ToList()
             };
 
             _context.Orders.Add(order);
-            _context.CartItems.RemoveRange(cart.CartItems); // Xóa giỏ hàng sau khi đặt hàng
+
+            // Xóa giỏ hàng
+            _context.CartItems.RemoveRange(cart.CartItems);
+
+            // Gửi thông báo đến Admin/Staff
+            var staffUsers = await _userManager.GetUsersInRoleAsync("Admin");
+            foreach (var staff in staffUsers)
+            {
+                _context.Notifications.Add(new Notification
+                {
+                    UserId = staff.Id,
+                    Message = $"Đơn hàng mới từ {user.UserName}",
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
             await _context.SaveChangesAsync();
 
             return RedirectToAction("OrderSuccess");

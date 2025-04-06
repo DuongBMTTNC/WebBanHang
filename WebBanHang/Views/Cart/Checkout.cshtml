@@ -1,0 +1,21 @@
+﻿@{
+    ViewData["Title"] = "Xác nhận thanh toán";
+}
+
+<h2>Xác nhận thanh toán</h2>
+
+<form method="post">
+    <div class="form-group">
+        <label>Địa chỉ giao hàng</label>
+        <textarea name="address" class="form-control" required></textarea>
+    </div>
+
+    <div class="form-group">
+        <label>Ghi chú đơn hàng</label>
+        <textarea name="note" class="form-control"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-success mt-3">Đặt hàng</button>
+    <a asp-action="Index" asp-controller="Cart" class="btn btn-secondary mt-3">Quay lại giỏ hàng</a>
+</form>
+

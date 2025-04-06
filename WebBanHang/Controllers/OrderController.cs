@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebBanHang.Data;
 using WebBanHang.Models;
 using WebBanHang.Services;
@@ -18,7 +20,27 @@ namespace WebBanHang.Controllers
             _userManager = userManager;
             _context = context;
         }
+        [HttpGet]
+        public async Task<IActionResult> Checkout()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "Account");
 
+            var cart = await _context.Carts
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Product)
+                .FirstOrDefaultAsync(c => c.UserId == user.Id);
+
+            if (cart == null || !cart.CartItems.Any())
+                return RedirectToAction("Index", "Cart");
+
+            // Giao diện nhập địa chỉ, chú thích
+            return View();
+        }
+
+
+        [HttpPost]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> ConfirmOrder(int orderId)
         {
             var order = await _context.Orders.FindAsync(orderId);

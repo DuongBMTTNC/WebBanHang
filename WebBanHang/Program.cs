@@ -20,6 +20,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<NotificationService>();
 
 var app = builder.Build();
 
