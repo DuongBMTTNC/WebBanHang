@@ -2,37 +2,27 @@
 using System.Net.Mail;
 using System.Net;
 using System.Threading.Tasks;
+using SendGrid.Helpers.Mail;
+using SendGrid;
 
 namespace WebBanHang.Services
 {
     public class EmailService
     {
         private readonly IConfiguration _config;
-
         public EmailService(IConfiguration config)
         {
             _config = config;
         }
 
-        public async Task SendEmailAsync(string toEmail, string subject, string body)
+        public async Task SendEmailAsync(string toEmail, string subject, string htmlContent)
         {
-            var smtpClient = new SmtpClient(_config["EmailSettings:SmtpServer"])
-            {
-                Port = int.Parse(_config["EmailSettings:SmtpPort"]),
-                Credentials = new NetworkCredential(_config["EmailSettings:SmtpUser"], _config["EmailSettings:SmtpPass"]),
-                EnableSsl = true
-            };
-
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress(_config["EmailSettings:SmtpUser"], "My Shop"),
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
-            };
-
-            mailMessage.To.Add(toEmail);
-            await smtpClient.SendMailAsync(mailMessage);
+            var apiKey = _config["SendGrid:ApiKey"];
+            var client = new SendGridClient(apiKey);
+            var from = new EmailAddress("quocduongtran19@gmail.com", "Shop");
+            var to = new EmailAddress(toEmail);
+            var msg = MailHelper.CreateSingleEmail(from, to, subject, "", htmlContent);
+            var response = await client.SendEmailAsync(msg);
         }
     }
 }

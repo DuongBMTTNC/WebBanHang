@@ -2,10 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using WebBanHang.Services;
 using WebBanHang.Models;
+using Microsoft.AspNetCore.Authorization;
+using WebBanHang.Data;
+using Microsoft.EntityFrameworkCore;
 namespace WebBanHang.Controllers
 {
     public class NotificationController : Controller
     {
+        private readonly ApplicationDbContext _context;
         private readonly NotificationService _notificationService;
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -15,12 +19,14 @@ namespace WebBanHang.Controllers
             _userManager = userManager;
         }
 
-        public async Task<IActionResult> Index()
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> StaffNotifications()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Challenge(); // Chưa đăng nhập
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == null)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
 
-            var notifications = await _notificationService.GetUserNotificationsAsync(user.Id);
             return View(notifications);
         }
     }
